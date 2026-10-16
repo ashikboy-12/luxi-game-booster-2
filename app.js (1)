@@ -1,0 +1,408 @@
+"use strict";
+
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+const STORE = {
+  games: "luxi_games_v2",
+  turbo: "luxi_turbo_v2",
+  focus: "luxi_focus_v2",
+  profile: "luxi_profile_v2"
+};
+
+const defaults = [
+  { id: 1, name: "eFootball", type: "Action" },
+  { id: 2, name: "Free Fire", type: "Battle" },
+  { id: 3, name: "Call of Duty", type: "Battle" }
+];
+
+function read(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value === null ? fallback : JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function save(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+}
+
+let games = read(STORE.games, defaults);
+if (!Array.isArray(games)) games = [...defaults];
+
+let turboOn = read(STORE.turbo, false) === true;
+let focusOn = read(STORE.focus, false) === true;
+let profile = read(STORE.profile, "balanced");
+let activeFilter = "All";
+let toastTimer;
+
+function notify(message) {
+  const toast = $("#toast");
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function gameCard(game) {
+  const name = escapeHTML(game.name);
+  const type = escapeHTML(game.type);
+
+  return `
+    <article class="game-card">
+      <div class="game-art">
+        <svg><use href="#i-game"></use></svg>
+      </div>
+      <div class="game-info">
+        <div class="game-name">${name}</div>
+        <div class="game-type">${type}</div>
+      </div>
+      <div class="game-actions">
+        <button class="mini-button open-game"
+          data-id="${game.id}">OPEN</button>
+        <button class="mini-button remove-game"
+          data-id="${game.id}" aria-label="Remove ${name}">×</button>
+      </div>
+    </article>`;
+}
+
+function renderGames() {
+  const home = $("#homeGameList");
+  const all = $("#allGameList");
+  const search = ($("#gameSearch")?.value || "").trim().toLowerCase();
+
+  if (home) {
+    home.innerHTML = games.length
+      ? games.slice(0, 2).map(gameCard).join("")
+      : '<p class="empty-message">No games added yet.</p>';
+  }
+
+  const filtered = games.filter(game => {
+    const matchesSearch = game.name.toLowerCase().includes(search);
+    const matchesType = activeFilter === "All" || game.type === activeFilter;
+    return matchesSearch && matchesType;
+  });
+
+  if (all) {
+    all.innerHTML = filtered.length
+      ? filtered.map(gameCard).join("")
+      : '<p class="empty-message">No matching games found.</p>';
+  }
+
+  const count = $("#gameCount");
+  if (count) count.textContent = String(games.length).padStart(2, "0");
+}
+
+function renderTurbo() {
+  $("#turboButton")?.classList.toggle("on", turboOn);
+  $("#turboSwitch")?.classList.toggle("active", turboOn);
+  $("#settingsTurbo")?.classList.toggle("active", turboOn);
+
+  $("#turboButton")?.setAttribute("aria-pressed", String(turboOn));
+  $("#turboSwitch")?.setAttribute("aria-pressed", String(turboOn));
+  $("#settingsTurbo")?.setAttribute("aria-pressed", String(turboOn));
+
+  const state = turboOn ? "ON" : "OFF";
+  if ($("#systemStatus")) $("#systemStatus").textContent = `LUXI TURBO: ${state}`;
+  if ($("#turboState")) $("#turboState").textContent = state;
+  if ($("#turboHeading")) $("#turboHeading").textContent =
+    turboOn ? "Turbo is active" : "Ready to boost?";
+  if ($("#turboDescription")) $("#turboDescription").textContent =
+    turboOn
+      ? "Your selected gaming profile is active."
+      : "Turn on Turbo before your next gaming session.";
+  if ($("#turboHint")) $("#turboHint").textContent =
+    turboOn ? "TURBO ENABLED" : "TAP TO ACTIVATE";
+  if ($("#modeStatus")) $("#modeStatus").textContent =
+    profile.charAt(0).toUpperCase() + profile.slice(1);
+}
+
+function renderFocus() {
+  $("#settingsFocus")?.classList.toggle("active", focusOn);
+
+  if ($("#settingsFocusText")) {
+    $("#settingsFocusText").textContent = focusOn ? "ON" : "OFF";
+  }
+  if ($("#focusStatus")) $("#focusStatus").textContent = focusOn ? "ON" : "OFF";
+  if ($("#focusTag")) $("#focusTag").textContent = focusOn ? "ACTIVE" : "OFF";
+}
+
+function renderProfile() {
+  $$("[data-profile]").forEach(button => {
+    button.classList.toggle("selected", button.dataset.profile === profile);
+  });
+  if ($("#modeStatus")) {
+    $("#modeStatus").textContent =
+      profile.charAt(0).toUpperCase() + profile.slice(1);
+  }
+}
+
+function showScreen(screenId) {
+  const screen = document.getElementById(screenId);
+  if (!screen) return;
+
+  $$(".screen").forEach(item => item.classList.remove("active"));
+  screen.classList.add("active");
+
+  $$("[data-screen]").forEach(button => {
+    button.classList.toggle("active", button.dataset.screen === screenId);
+  });
+
+  if (screenId === "gamesScreen") renderGames();
+}
+
+function openModal(title, content) {
+  if ($("#modalTitle")) $("#modalTitle").textContent = title;
+  if ($("#modalContent")) $("#modalContent").innerHTML = content;
+  $("#modal")?.classList.add("show");
+  $("#modal")?.setAttribute("aria-hidden", "false");
+}
+
+function closeModal() {
+  $("#modal")?.classList.remove("show");
+  $("#modal")?.setAttribute("aria-hidden", "true");
+}
+
+function showFloatingPanel() {
+  openModal("LUXI QUICK PANEL", `
+    <p class="panel-preview">
+      This is a quick panel inside LUXI.
+      It cannot float above other apps yet.
+    </p>
+    <div class="panel-controls">
+      <button class="modal-action" data-modal-action="turbo">
+        Turbo: ${turboOn ? "ON" : "OFF"}
+      </button>
+      <button class="modal-action" data-modal-action="focus">
+        Focus: ${focusOn ? "ON" : "OFF"}
+      </button>
+      <button class="modal-action" data-modal-action="device">
+        Device Info
+      </button>
+    </div>
+    <p>True floating controls require native Android overlay support.</p>
+  `);
+}
+
+function showDeviceInfo() {
+  const memory = navigator.deviceMemory
+    ? `${navigator.deviceMemory} GB (browser estimate)`
+    : "Not available in browser";
+
+  openModal("DEVICE INFORMATION", `
+    <div class="panel-preview">
+      <p><strong>Device:</strong> ${escapeHTML(navigator.userAgent)}</p>
+      <p><strong>Screen:</strong> ${screen.width} × ${screen.height}</p>
+      <p><strong>Pixel ratio:</strong> ${window.devicePixelRatio || 1}</p>
+      <p><strong>Reported memory:</strong> ${memory}</p>
+      <p>Live FPS, CPU temperature and GPU performance are not available here.</p>
+    </div>
+  `);
+}
+
+function showSplitScreenGuide() {
+  openModal("USE TWO APPS", `
+    <div class="panel-preview">
+      <p>1. Open the game you want to play.</p>
+      <p>2. Open Android Recent Apps.</p>
+      <p>3. Tap the app icon or menu, if available.</p>
+      <p>4. Choose Split screen, if your phone and app support it.</p>
+      <p>Some games do not support split-screen. LUXI cannot force every app to do it.</p>
+    </div>
+  `);
+}
+
+function addGame(name, type = "Other") {
+  name = name.trim();
+
+  if (!name) {
+    notify("Enter a game name first.");
+    return;
+  }
+
+  if (games.some(game => game.name.toLowerCase() === name.toLowerCase())) {
+    notify("This game is already in your list.");
+    return;
+  }
+
+  games.push({
+    id: Date.now(),
+    name,
+    type
+  });
+
+  save(STORE.games, games);
+  renderGames();
+
+  if ($("#newGameName")) $("#newGameName").value = "";
+  $("#addGameForm")?.classList.remove("show");
+  notify("Game added to LUXI.");
+}
+
+document.addEventListener("click", event => {
+  const nav = event.target.closest("[data-screen]");
+  if (nav) {
+    showScreen(nav.dataset.screen);
+    return;
+  }
+
+  const action = event.target.closest("[data-action]");
+  if (action) {
+    switch (action.dataset.action) {
+      case "floating":
+        showFloatingPanel();
+        break;
+      case "focus":
+        focusOn = !focusOn;
+        save(STORE.focus, focusOn);
+        renderFocus();
+        notify(`Focus Mode ${focusOn ? "ON" : "OFF"}`);
+        break;
+      case "device":
+        showDeviceInfo();
+        break;
+      case "dual":
+        showSplitScreenGuide();
+        break;
+    }
+    return;
+  }
+
+  if (event.target.closest("#turboButton, #turboSwitch, #settingsTurbo")) {
+    turboOn = !turboOn;
+    save(STORE.turbo, turboOn);
+    renderTurbo();
+    notify(`LUXI Turbo ${turboOn ? "ON" : "OFF"}`);
+    return;
+  }
+
+  const profileButton = event.target.closest("[data-profile]");
+  if (profileButton) {
+    profile = profileButton.dataset.profile;
+    save(STORE.profile, profile);
+    renderProfile();
+    renderTurbo();
+    notify(`${profile} profile selected`);
+    return;
+  }
+
+  const filterButton = event.target.closest("[data-filter]");
+  if (filterButton) {
+    activeFilter = filterButton.dataset.filter;
+    $$("[data-filter]").forEach(button => {
+      button.classList.toggle("selected", button === filterButton);
+    });
+    renderGames();
+    return;
+  }
+
+  if (event.target.closest("#addGameButton")) {
+    $("#addGameForm")?.classList.toggle("show");
+    return;
+  }
+
+  const removeButton = event.target.closest(".remove-game");
+  if (removeButton) {
+    const id = Number(removeButton.dataset.id);
+    const game = games.find(item => item.id === id);
+    if (game && confirm(`Remove ${game.name} from LUXI?`)) {
+      games = games.filter(item => item.id !== id);
+      save(STORE.games, games);
+      renderGames();
+      notify("Game removed.");
+    }
+    return;
+  }
+
+  if (event.target.closest(".open-game")) {
+    notify("Game launching needs native Android integration.");
+    return;
+  }
+
+  const modalAction = event.target.closest("[data-modal-action]");
+  if (modalAction) {
+    const type = modalAction.dataset.modalAction;
+    closeModal();
+
+    if (type === "turbo") {
+      turboOn = !turboOn;
+      save(STORE.turbo, turboOn);
+      renderTurbo();
+      notify(`LUXI Turbo ${turboOn ? "ON" : "OFF"}`);
+    } else if (type === "focus") {
+      focusOn = !focusOn;
+      save(STORE.focus, focusOn);
+      renderFocus();
+      notify(`Focus Mode ${focusOn ? "ON" : "OFF"}`);
+    } else if (type === "device") {
+      showDeviceInfo();
+    }
+    return;
+  }
+
+  if (event.target.closest("#closeModal")) {
+    closeModal();
+    return;
+  }
+
+  if (event.target.id === "modal") {
+    closeModal();
+    return;
+  }
+
+  if (event.target.closest("#clearGames")) {
+    if (confirm("Remove all games from your LUXI list?")) {
+      games = [];
+      save(STORE.games, games);
+      renderGames();
+      notify("Game list cleared.");
+    }
+    return;
+  }
+
+  if (event.target.closest("#resetControls")) {
+    if (confirm("Reset LUXI settings?")) {
+      turboOn = false;
+      focusOn = false;
+      profile = "balanced";
+      save(STORE.turbo, turboOn);
+      save(STORE.focus, focusOn);
+      save(STORE.profile, profile);
+      renderTurbo();
+      renderFocus();
+      renderProfile();
+      notify("Settings reset.");
+    }
+  }
+});
+
+$("#gameSearch")?.addEventListener("input", renderGames);
+
+$("#addGameForm")?.addEventListener("submit", event => {
+  event.preventDefault();
+  addGame($("#newGameName")?.value || "");
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeModal();
+});
+
+renderGames();
+renderTurbo();
+renderFocus();
+renderProfile();

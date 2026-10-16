@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b10">
+  <title>LUXI Gaming Center</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-shell">
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <path d="M24 3 43 14v20L24 45 5 34V14Z"/>
+            <path d="m16 31 8-19 8 19-8-5Z"/>
+            <path d="M12 19v10m24-10v10"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">LUXI<span>.</span></div>
+          <div class="brand-caption">GAMING COMMAND CENTER</div>
+        </div>
+      </div>
+      <div class="system-status">
+        <span class="status-dot"></span>
+        <span id="systemStatus">SYSTEM READY</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="screen active" id="homeScreen">
+        <div class="intro">
+          <div class="eyebrow">YOUR SPACE. YOUR RULES.</div>
+          <h1>Enter your<br><span>game zone.</span></h1>
+          <p>Your personal gaming control center.</p>
+        </div>
+
+        <section class="turbo-card">
+          <div class="card-topline">
+            <span class="eyebrow">LUXI PERFORMANCE CORE</span>
+            <span class="state-pill" id="turboState">STANDBY</span>
+          </div>
+
+          <h2 id="turboHeading">Ready to play?</h2>
+          <p id="turboDescription">Choose your profile and prepare your session.</p>
+
+          <div class="turbo-control">
+            <button class="power-button" id="turboButton" aria-label="Toggle Gaming Turbo">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2v10"/>
+                <path d="M6.2 5.7a9 9 0 1 0 11.6 0"/>
+              </svg>
+            </button>
+            <div class="turbo-label">
+              <strong>Gaming Turbo</strong>
+              <span id="turboHint">Control mode is off</span>
+            </div>
+            <button class="toggle-switch" id="turboSwitch"
+              aria-label="Toggle Gaming Turbo" aria-pressed="false">
+              <span></span>
+            </button>
+          </div>
+
+          <div class="profile-list">
+            <button class="profile selected" data-profile="balanced">
+              <span>BALANCED</span><strong>Daily play</strong>
+            </button>
+            <button class="profile" data-profile="performance">
+              <span>PERFORMANCE</span><strong>Game focus</strong>
+            </button>
+            <button class="profile" data-profile="battery">
+              <span>BATTERY</span><strong>Long sessions</strong>
+            </button>
+          </div>
+        </section>
+
+        <div class="metrics">
+          <div class="metric">
+            <span>GAME LIBRARY</span>
+            <strong id="gameCount">00</strong>
+          </div>
+          <div class="metric">
+            <span>TURBO STATUS</span>
+            <strong id="modeStatus">READY</strong>
+          </div>
+          <div class="metric">
+            <span>FOCUS MODE</span>
+            <strong id="focusStatus">OFF</strong>
+          </div>
+        </div>
+
+        <div class="section-heading">
+          <h2>Quick controls</h2>
+          <span>01 / CONTROL</span>
+        </div>
+
+        <div class="feature-grid">
+          <button class="feature-card" data-action="floating">
+            <span class="feature-icon">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="15" rx="3"/><path d="M3 9h18m-12 5h6"/></svg>
+            </span>
+            <strong>Floating Panel</strong>
+            <small>Quick gaming controls</small>
+            <span class="feature-tag">PANEL</span>
+          </button>
+
+          <button class="feature-card" data-action="focus">
+            <span class="feature-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2"/></svg>
+            </span>
+            <strong>Focus Mode</strong>
+            <small>Session focus control</small>
+            <span class="feature-tag" id="focusTag">DISABLED</span>
+          </button>
+
+          <button class="feature-card" data-action="device">
+            <span class="feature-icon">
+              <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4m6-4v4M9 18v4m6-4v4M2 9h4m-4 6h4m12-6h4m-4 6h4"/></svg>
+            </span>
+            <strong>Device Lab</strong>
+            <small>Device information</small>
+            <span class="feature-tag">DIAGNOSTICS</span>
+          </button>
+
+          <button class="feature-card" data-action="dual">
+            <span class="feature-icon">
+              <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M10 18h4"/></svg>
+            </span>
+            <strong>Dual App Guide</strong>
+            <small>Android multitasking</small>
+            <span class="feature-tag">MULTITASK</span>
+          </button>
+        </div>
+
+        <div class="section-heading">
+          <h2>Game Space</h2>
+          <button class="text-button" data-screen="gamesScreen">OPEN LIBRARY ↗</button>
+        </div>
+
+        <div class="game-list" id="homeGameList"></div>
+
+        <div class="notice">
+          <strong>Built for your setup</strong>
+          <p>LUXI keeps its controls lightweight. Real system-level boosting and cross-app overlays require native Android support.</p>
+        </div>
+      </section>
+
+      <section class="screen" id="gamesScreen">
+        <div class="intro">
+          <div class="eyebrow">YOUR PERSONAL LIBRARY</div>
+          <h1>Game <span>Space.</span></h1>
+          <p>Organize your gaming collection.</p>
+        </div>
+
+        <label class="search-box">
+          <span>⌕</span>
+          <input id="gameSearch" type="search" placeholder="Search your games...">
+        </label>
+
+        <div class="filter-list">
+          <button class="filter-button selected" data-filter="All">All Games</button>
+          <button class="filter-button" data-filter="Action">Action</button>
+          <button class="filter-button" data-filter="Battle">Battle</button>
+          <button class="filter-button" data-filter="Other">Other</button>
+        </div>
+
+        <div class="game-list" id="allGameList"></div>
+
+        <button class="add-game-button" id="addGameButton">＋ ADD TO GAME SPACE</button>
+
+        <form class="add-game-form" id="addGameForm">
+          <input id="newGameName" maxlength="40" placeholder="Enter game name" required>
+          <button type="submit">SAVE</button>
+        </form>
+
+        <div class="notice">
+          <strong>Game library</strong>
+          <p>Games saved here are browser entries. Automatically finding and launching installed apps requires native Android integration.</p>
+        </div>
+      </section>
+
+      <section class="screen" id="toolsScreen">
+        <div class="intro">
+          <div class="eyebrow">SYSTEM / UTILITIES</div>
+          <h1>Gaming <span>toolkit.</span></h1>
+          <p>Your tools, organized in one place.</p>
+        </div>
+        <div class="feature-grid">
+          <button class="feature-card" data-action="floating">
+            <span class="feature-icon">▣</span>
+            <strong>Floating Panel</strong><small>Open control preview</small>
+          </button>
+          <button class="feature-card" data-action="focus">
+            <span class="feature-icon">◎</span>
+            <strong>Focus Mode</strong><small>Toggle focus status</small>
+          </button>
+          <button class="feature-card" data-action="device">
+            <span class="feature-icon">⌘</span>
+            <strong>Device Lab</strong><small>View device details</small>
+          </button>
+          <button class="feature-card" data-action="dual">
+            <span class="feature-icon">▤</span>
+            <strong>Dual App Guide</strong><small>Check multitasking</small>
+          </button>
+        </div>
+        <div class="notice">
+          <strong>Overlay compatibility</strong>
+          <p>A real floating panel over other apps needs a native Android overlay service and permission.</p>
+        </div>
+      </section>
+
+      <section class="screen" id="settingsScreen">
+        <div class="intro">
+          <div class="eyebrow">YOUR CONFIGURATION</div>
+          <h1>LUXI <span>Settings.</span></h1>
+          <p>Manage your local gaming controls.</p>
+        </div>
+
+        <div class="settings-list">
+          <div class="settings-row">
+            <div><strong>Gaming Turbo</strong><small>Toggle LUXI control state</small></div>
+            <button id="settingsTurbo">TOGGLE</button>
+          </div>
+          <div class="settings-row">
+            <div><strong>Focus Mode</strong><small id="settingsFocusText">Currently off</small></div>
+            <button id="settingsFocus">TOGGLE</button>
+          </div>
+          <div class="settings-row">
+            <div><strong>Game Library</strong><small>Remove saved game entries</small></div>
+            <button id="clearGames">CLEAR</button>
+          </div>
+          <div class="settings-row">
+            <div><strong>Reset Controls</strong><small>Restore default control states</small></div>
+            <button id="resetControls">RESET</button>
+          </div>
+        </div>
+
+        <div class="notice">
+          <strong>LUXI · Gaming Command Center</strong>
+          <p>No account required. Local settings are saved in browser storage when available.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-button active" data-screen="homeScreen">
+      <span>⌂</span><small>HOME</small>
+    </button>
+    <button class="nav-button" data-screen="gamesScreen">
+      <span>▦</span><small>GAMES</small>
+    </button>
+    <button class="nav-button" data-screen="toolsScreen">
+      <span>⌘</span><small>TOOLS</small>
+    </button>
+    <button class="nav-button" data-screen="settingsScreen">
+      <span>⚙</span><small>SETTINGS</small>
+    </button>
+    <button class="nav-button" data-action="floating">
+      <span>▣</span><small>PANEL</small>
+    </button>
+  </nav>
+
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal-sheet">
+      <div class="modal-heading">
+        <h2 id="modalTitle">LUXI Controls</h2>
+        <button id="closeModal">CLOSE ✕</button>
+      </div>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
